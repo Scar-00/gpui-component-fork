@@ -202,13 +202,13 @@ impl NativeMenu {
 
         #[cfg(target_os = "macos")]
         {
-            macos::show(self.items, cx.asset_source().clone(), position, window, cx);
+            macos::show(self.items, cx.assets().clone(), position, window, cx);
         }
         #[cfg(target_os = "windows")]
         {
             windows::show(
                 self.items,
-                cx.asset_source().clone(),
+                cx.assets().clone(),
                 position,
                 cx.theme().is_dark(),
                 window,
