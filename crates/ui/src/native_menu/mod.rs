@@ -200,7 +200,7 @@ impl NativeMenu {
             return;
         }
 
-        #[cfg(target_os = "macos")]
+        /*#[cfg(target_os = "macos")]
         {
             macos::show(self.items, cx.assets().clone(), position, window, cx);
         }
@@ -215,7 +215,7 @@ impl NativeMenu {
                 cx,
             );
         }
-        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]*/
         fallback::show(self.items, position, window, cx);
     }
 }
