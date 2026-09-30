@@ -622,7 +622,7 @@ fn parse_number(number: &str, text: &str, method: &str) -> ShellResult<f32> {
 fn length(value: &Bridged, method: &str) -> ShellResult<Length> {
     Ok(match parse_length(value, method)? {
         LengthLiteral::Absolute(absolute) => Length::Definite(absolute.into()),
-        LengthLiteral::Fraction(fraction) => Length::Definite(relative(fraction)),
+        LengthLiteral::Fraction(fraction) => Length::Definite(relative(fraction).into()),
         LengthLiteral::Auto => Length::Auto,
     })
 }
@@ -630,7 +630,7 @@ fn length(value: &Bridged, method: &str) -> ShellResult<Length> {
 /// A bare number is a multiplier; anything else follows the length grammar.
 fn line_height(value: &Bridged, method: &str) -> ShellResult<DefiniteLength> {
     match value {
-        Bridged::Number(multiplier) => Ok(relative(*multiplier as f32)),
+        Bridged::Number(multiplier) => Ok(relative(*multiplier as f32).into()),
         other => definite_length(other, method),
     }
 }
@@ -648,7 +648,7 @@ fn font_weight(value: f32, method: &str) -> ShellResult<FontWeight> {
 fn definite_length(value: &Bridged, method: &str) -> ShellResult<DefiniteLength> {
     match parse_length(value, method)? {
         LengthLiteral::Absolute(absolute) => Ok(absolute.into()),
-        LengthLiteral::Fraction(fraction) => Ok(relative(fraction)),
+        LengthLiteral::Fraction(fraction) => Ok(relative(fraction).into()),
         LengthLiteral::Auto => Err(ShellError::runtime(format!(
             "`{method}` cannot be \"auto\"; it expects a definite length such as 12 or \"50%\""
         ))),

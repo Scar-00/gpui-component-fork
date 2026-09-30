@@ -15,7 +15,7 @@ const POPOVER_GAP: Pixels = px(4.);
 use crate::{
     ActiveTheme, IndexPath, Selectable, actions, h_flex,
     input::{
-        self, EditorState,
+        self, CompletionMenuPlacement, EditorState,
         popovers::{editor_popover, render_markdown},
     },
     label::Label,
@@ -339,7 +339,20 @@ impl CompletionMenu {
         cx.notify();
     }
 
-    fn origin(&self, cx: &App) -> Option<Point<Pixels>> {
+    /// Bottom offset (from the input frame's bottom edge) that parks the
+    /// menu's bottom edge one gap above the cursor line.
+    ///
+    /// Expressed through the frame height instead of the menu height, so the
+    /// menu stays glued to the cursor line no matter how many items it holds.
+    fn above_bottom_offset(
+        input_height: Pixels,
+        below_pos_y: Pixels,
+        line_height: Pixels,
+    ) -> Pixels {
+        input_height - below_pos_y + line_height + POPOVER_GAP + POPOVER_GAP
+    }
+
+    fn origin(&self, cx: &App) -> Option<(Point<Pixels>, Pixels)> {
         let editor = self.editor.upgrade()?;
         let editor = editor.read(cx);
         let Some((cursor_bounds, line_height)) = editor.cursor_layout() else {
@@ -349,10 +362,11 @@ impl CompletionMenu {
 
         let scroll_origin = editor.scroll_offset();
 
-        Some(
+        Some((
             scroll_origin + cursor_origin - editor.input_bounds().origin
                 + Point::new(-px(4.), line_height + px(4.)),
-        )
+            line_height,
+        ))
     }
 }
 
@@ -367,7 +381,7 @@ impl Render for CompletionMenu {
             return Empty.into_any_element();
         }
 
-        let Some(pos) = self.origin(cx) else {
+        let Some((pos, line_height)) = self.origin(cx) else {
             return Empty.into_any_element();
         };
 
@@ -382,6 +396,7 @@ impl Render for CompletionMenu {
             return Empty.into_any_element();
         };
         let configured_max = editor.read(cx).lsp().completion_menu.max_width;
+        let placement = editor.read(cx).lsp().completion_menu.placement;
         let max_width = configured_max.min(window.bounds().size.width - pos.x);
         let abs_pos = editor.read(cx).input_bounds().origin + pos;
         let vertical_layout =
@@ -392,7 +407,13 @@ impl Render for CompletionMenu {
             div()
                 .absolute()
                 .left(pos.x)
-                .top(pos.y)
+                .when(placement == CompletionMenuPlacement::Below, |this| {
+                    this.top(pos.y)
+                })
+                .when(placement == CompletionMenuPlacement::Above, |this| {
+                    let input_height = editor.read(cx).input_bounds().size.height;
+                    this.bottom(Self::above_bottom_offset(input_height, pos.y, line_height))
+                })
                 .flex()
                 .flex_row()
                 .gap(POPOVER_GAP)
@@ -427,5 +448,24 @@ impl Render for CompletionMenu {
                 })),
         )
         .into_any_element()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn above_anchor_glues_the_menu_bottom_to_the_cursor_line() {
+        // Single-line frame: 32px tall, 20px cursor line at y=6..26.
+        let input_height = px(32.);
+        let line_height = px(20.);
+        let cursor_top = px(6.);
+        // The below-anchor for the same cursor (cursor bottom + gap).
+        let below_pos_y = cursor_top + line_height + POPOVER_GAP;
+        let bottom = CompletionMenu::above_bottom_offset(input_height, below_pos_y, line_height);
+        // `.bottom(b)` puts the menu's bottom edge at `height - b` from the
+        // top: exactly one gap above the cursor line.
+        assert_eq!(input_height - bottom, cursor_top - POPOVER_GAP);
     }
 }

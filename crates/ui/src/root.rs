@@ -10,7 +10,7 @@ use crate::{
 };
 use gpui::{
     AnyView, App, AppContext, ClipboardItem, Context, DefiniteLength, ElementId, Entity,
-    FocusHandle, InteractiveElement, IntoElement, KeyBinding, ParentElement as _, Pixels, Render,
+    FocusHandle, InteractiveElement, IntoElement, ParentElement as _, Pixels, Render,
     StyleRefinement, Styled, WeakFocusHandle, Window, actions, div, prelude::FluentBuilder as _,
 };
 use gpui_base::{TextSelection, TextSelectionLayer, TextSelectionScopeId};
@@ -19,15 +19,15 @@ use std::{any::TypeId, rc::Rc};
 actions!(root, [Tab, TabPrev]);
 
 const CONTEXT: &str = "Root";
-pub(crate) fn init(cx: &mut App) {
-    cx.bind_keys([
+pub(crate) fn init(_cx: &mut App) {
+    /*cx.bind_keys([
         KeyBinding::new("tab", Tab, Some(CONTEXT)),
         KeyBinding::new("shift-tab", TabPrev, Some(CONTEXT)),
         #[cfg(target_os = "macos")]
         KeyBinding::new("cmd-c", Copy, Some(CONTEXT)),
         #[cfg(not(target_os = "macos"))]
         KeyBinding::new("ctrl-c", Copy, Some(CONTEXT)),
-    ]);
+    ]);*/
 }
 
 /// Root is a view for the App window for as the top level view (Must be the first view in the window).

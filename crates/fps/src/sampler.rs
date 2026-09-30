@@ -2,7 +2,7 @@ use std::{collections::VecDeque, time::Duration};
 
 use gpui::{
     WindowId,
-    profiler::{FrameTiming, FrameTimingCollector},
+    profiler::{FrameEvent, FrameTiming, FrameTimingCollector},
 };
 use web_time::Instant;
 
@@ -53,6 +53,10 @@ impl FrameSampler {
             .collector
             .collect_unseen()
             .into_iter()
+            .filter_map(|event| match event {
+                FrameEvent::Draw(timing) => Some(timing),
+                FrameEvent::Present(_) => None,
+            })
             .collect();
         self.ingest(timings, Instant::now());
     }

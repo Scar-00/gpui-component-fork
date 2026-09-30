@@ -104,9 +104,11 @@ impl Inline {
                 color.into()
             },
             corner_radii: Corners::default(),
-            border_color: gpui::transparent_black(),
+            border_color: gpui::transparent_black().into(),
             border_style: BorderStyle::default(),
             border_widths: gpui::Edges::all(px(0.)),
+            border_dashed_gap: Default::default(),
+            border_dashed_length: Default::default(),
         });
     }
 

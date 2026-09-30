@@ -1506,8 +1506,10 @@ impl Element for Scrollbar {
                                     left: px(0.),
                                 }
                             },
-                            border_color: painted_border,
+                            border_color: painted_border.into(),
                             border_style: BorderStyle::default(),
+                            border_dashed_gap: Default::default(),
+                            border_dashed_length: Default::default(),
                         });
 
                         cx.paint_quad(

@@ -670,7 +670,7 @@ impl ShellRoot {
                 .right(spacing.lg)
                 .w(TOAST_WIDTH),
         )
-        .with_priority(TOAST_PRIORITY)
+        .priority(TOAST_PRIORITY)
     }
 }
 
@@ -723,7 +723,7 @@ impl ShellRoot {
         if active_focus_trap(window, cx).is_some() {
             return;
         }
-        window.blur();
+        window.blur(cx);
     }
 }
 
@@ -751,7 +751,7 @@ impl Render for ShellRoot {
             )
             .relative()
             .size_full()
-            .bg(colors.background)
+            //.bg(colors.background)
             .text_color(colors.foreground)
             // Painted back to front; see the stacking order on `ShellRoot`.
             .child(TextSelectionLayer)

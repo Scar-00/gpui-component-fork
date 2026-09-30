@@ -195,10 +195,12 @@ impl Element for ScrollableMask {
                 window.paint_quad(PaintQuad {
                     bounds,
                     border_widths: Edges::all(px(1.0)),
-                    border_color: color,
+                    border_color: color.into(),
                     background: gpui::transparent_white().into(),
                     corner_radii: Corners::all(px(0.)),
                     border_style: BorderStyle::default(),
+                    border_dashed_gap: Default::default(),
+                    border_dashed_length: Default::default(),
                 });
             }
 

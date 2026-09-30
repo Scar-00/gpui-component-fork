@@ -14,6 +14,17 @@ use crate::input::InputBaseState;
 /// Default debounce duration for inline completions.
 const DEFAULT_INLINE_COMPLETION_DEBOUNCE: Duration = Duration::from_millis(300);
 
+/// Where the completion popover opens relative to the cursor line.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum CompletionMenuPlacement {
+    /// Below the cursor line.
+    #[default]
+    Below,
+    /// Above the cursor line, e.g. for single-line inputs docked at the
+    /// bottom of a window, where a downward menu would be clipped.
+    Above,
+}
+
 /// Display options for the LSP completion popover.
 ///
 /// Accessed through [`super::Lsp::completion_menu`] so embedders can tweak the
@@ -26,12 +37,17 @@ pub struct CompletionMenuOptions {
     /// truncate longer labels. Widen this when hosting an editor that
     /// surfaces long completion labels.
     pub max_width: Pixels,
+    /// Which side of the cursor line the popover opens on.
+    ///
+    /// Defaults to [`CompletionMenuPlacement::Below`].
+    pub placement: CompletionMenuPlacement,
 }
 
 impl Default for CompletionMenuOptions {
     fn default() -> Self {
         Self {
             max_width: px(320.),
+            placement: CompletionMenuPlacement::Below,
         }
     }
 }
