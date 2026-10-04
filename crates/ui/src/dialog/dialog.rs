@@ -15,6 +15,7 @@ use crate::{
     button::{Button, ButtonVariant, ButtonVariants as _},
     dialog::{DialogContent, DialogTitle},
     scroll::ScrollableElement as _,
+    styled::fade_shadows,
     v_flex,
 };
 
@@ -526,6 +527,8 @@ impl RenderOnce for Dialog {
             1.,
         ));
 
+        let custom_shadow = self.style.box_shadow.clone();
+
         anchored()
             .position(point(window_paddings.left, window_paddings.top))
             .snap_to_window()
@@ -678,6 +681,10 @@ impl RenderOnce for Dialog {
                                                     inset: false,
                                                 },
                                             ];
+                                            let shadow = custom_shadow
+                                                .as_ref()
+                                                .map(|shadows| fade_shadows(shadows, delta))
+                                                .unwrap_or(shadow);
                                             this.top(y * delta).shadow(shadow)
                                         },
                                     )
