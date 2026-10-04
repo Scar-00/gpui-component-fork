@@ -16,7 +16,7 @@ use crate::{
     ActiveTheme as _, Edges, Icon, IconName, Sizable as _, StyledExt, TITLE_BAR_HEIGHT,
     animation::cubic_bezier,
     button::{Button, ButtonVariants as _},
-    styled::toast_shadow,
+    styled::{fade_shadows, toast_shadow},
     v_flex,
 };
 
@@ -410,6 +410,7 @@ impl Render for Notification {
         };
         let has_icon = icon.is_some();
         let placement = self.placement.unwrap_or(cx.theme().notification.placement);
+        let custom_shadow = self.style.box_shadow.clone();
 
         BaseToast::new("notification")
             .transition_status(transition_status)
@@ -484,7 +485,11 @@ impl Render for Notification {
                 move |this, delta| {
                     if closing {
                         let opacity = 1. - delta;
-                        let that = this.opacity(opacity).shadow(toast_shadow(opacity.powi(3)));
+                        let shadow = custom_shadow
+                            .as_ref()
+                            .map(|shadows| fade_shadows(shadows, opacity.powi(3)))
+                            .unwrap_or_else(|| toast_shadow(opacity.powi(3)));
+                        let that = this.opacity(opacity).shadow(shadow);
                         let y_offset = match placement {
                             Anchor::TopLeft | Anchor::TopRight | Anchor::TopCenter => {
                                 -delta * NOTIFICATION_TRANSITION_OFFSET
@@ -515,9 +520,11 @@ impl Render for Notification {
                         // keeps it out of sight until the card can cover it —
                         // where this used to drop the shadow outright past a
                         // threshold, which popped.
-                        this.top(px(0.) + y_offset)
-                            .opacity(opacity)
-                            .shadow(toast_shadow(opacity.powi(3)))
+                        let shadow = custom_shadow
+                            .as_ref()
+                            .map(|shadows| fade_shadows(shadows, opacity.powi(3)))
+                            .unwrap_or_else(|| toast_shadow(opacity.powi(3)));
+                        this.top(px(0.) + y_offset).opacity(opacity).shadow(shadow)
                     }
                 },
             )

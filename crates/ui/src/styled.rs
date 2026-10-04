@@ -15,6 +15,47 @@ const FOCUS_RING_OPACITY: f32 = 0.5;
 /// shadcn/ui spends at each elevation.
 const SURFACE_SHADOW_INK: f32 = 0.1;
 
+/// Fade caller-supplied shadows without replacing their geometry or color.
+pub(crate) fn fade_shadows(shadows: &[BoxShadow], opacity: f32) -> Vec<BoxShadow> {
+    shadows
+        .iter()
+        .cloned()
+        .map(|mut shadow| {
+            shadow.color = shadow.color.opacity(opacity.clamp(0., 1.));
+            shadow
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod shadow_tests {
+    use super::*;
+
+    #[test]
+    fn custom_shadow_fades_without_changing_geometry() {
+        let shadow = BoxShadow::new(px(1.), px(2.), hsla(0.5, 0.6, 0.7, 0.4))
+            .blur_radius(px(3.))
+            .spread_radius(px(-1.))
+            .inset();
+        let faded = fade_shadows(std::slice::from_ref(&shadow), 0.5);
+        let mut expected = shadow.clone();
+        expected.color = shadow.color.opacity(0.5);
+        assert_eq!(faded, vec![expected]);
+        assert_eq!(
+            fade_shadows(std::slice::from_ref(&shadow), 1.),
+            vec![shadow.clone()]
+        );
+        assert!(fade_shadows(&[shadow], 0.)[0].color.is_transparent());
+    }
+
+    #[test]
+    fn explicit_empty_shadow_stays_empty_during_animation() {
+        for opacity in [0., 0.5, 1.] {
+            assert!(fade_shadows(&[], opacity).is_empty());
+        }
+    }
+}
+
 /// Ink of the hairline ring standing in for a popover's border.
 ///
 /// shadcn/ui draws no border on a popup surface at all: its edge is a 1px
